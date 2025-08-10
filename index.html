@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily GIF 💌</title>
+  <style>
+    :root { --bg:#0b0b10; --card:#141420; --ink:#f5f7ff; --muted:#9aa3b2; --accent:#7c4dff; }
+    html,body{height:100%;}
+    body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Inter,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(120deg,#0b0b10,#121220 60%,#0b0b10); color:var(--ink); display:grid; place-items:center;}
+    .wrap{width:min(960px,96vw);}
+    .card{background:var(--card); border-radius:20px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.45);}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+    h1{font-size:20px; margin:0; letter-spacing:.2px;}
+    .muted{color:var(--muted); font-size:12px}
+    .controls{display:flex; gap:8px; flex-wrap:wrap}
+    button{background:#1a1a2b; color:var(--ink); border:1px solid #2b2b3e; padding:8px 12px; border-radius:12px; cursor:pointer}
+    button:hover{border-color:#4a4a6a}
+    button.primary{background:var(--accent); border:none}
+    .viewer{margin-top:12px; display:grid; gap:12px}
+    .frame{display:grid; place-items:center; background:#0f0f18; border:1px solid #24243a; border-radius:16px; aspect-ratio:3/4; overflow:hidden}
+    .frame img{max-width:100%; max-height:100%; display:block}
+    .caption{display:flex; justify-content:space-between; align-items:center}
+    .index{font-size:12px; color:var(--muted)}
+    footer{margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px}
+    a.link{color:var(--ink)}
+    .hidden{display:none}
+    .notice{background:#10102a; border:1px dashed #3a3a7a; padding:8px 10px; border-radius:10px; font-size:12px}
+  </style>
+  <style id="mobile-only-overrides">
+    /* Mobile-friendly, but visible on desktop at a narrow width */
+    html, body { height: 100%; }
+    body { margin:0; }
+    .wrap{ width:min(480px, 100vw); margin:0 auto; }
+    .card{ border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.35); min-height:100vh; padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
+    header{ flex-direction:column; align-items:stretch; gap:8px; }
+    h1{ font-size:22px; }
+    .controls{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+    #today{ grid-column: span 2; }
+    button{ width:100%; min-height:44px; font-size:16px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    button:active{ transform: translateY(1px); }
+    .viewer{ gap:8px; }
+    .frame{ aspect-ratio:9/16; border-radius:12px; }
+    .frame img{ -webkit-user-drag:none; user-select:none; }
+    .caption{ gap:8px; }
+    footer{ flex-direction:column; align-items:flex-start; gap:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Daily GIF 💌</h1>
+          <div class="muted">One gif per day — made with love.</div>
+        </div>
+        <div class="controls">
+          <button id="prev">⟵ Back</button>
+          <button id="today" class="primary">Today</button>
+          <button id="next">Forward ⟶</button>
+          <button id="random">Shuffle</button>
+          <button id="copy">Copy link</button>
+        </div>
+      </header>
+
+      <div id="guard" class="notice hidden"></div>
+
+      <section class="viewer">
+        <div id="frame" class="frame"><div class="muted">Loading…</div></div>
+        <div class="caption">
+          <div id="label" class="muted">—</div>
+          <div id="idx" class="index">0 / 0</div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="muted">Tip: add or edit your list in <code>gifs.json</code>.</div>
+        <a class="link muted" href="#" id="about">How this works</a>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+  /**
+   * QUICK START
+   * 1) Put this file + a file named `gifs.json` on any static host (GitHub Pages / Netlify / Vercel).
+   * 2) gifs.json format:
+   *    { "start": "2025-08-10", "secret": "optional-salt", "items": [
+   *       {"url":"/gifs/001.gif","title":"Day 1"},
+   *       {"url":"/gifs/002.gif","title":"Day 2"}
+   *    ]}
+   * 3) Drop your GIFs in a /gifs/ folder (or use full URLs).
+   * 4) Open the site; each calendar day shows one item, cycling when list ends.
+   */
+
+  const els = {
+    frame: document.getElementById('frame'),
+    label: document.getElementById('label'),
+    idx: document.getElementById('idx'),
+    prev: document.getElementById('prev'),
+    next: document.getElementById('next'),
+    today: document.getElementById('today'),
+    random: document.getElementById('random'),
+    copy: document.getElementById('copy'),
+    guard: document.getElementById('guard'),
+    about: document.getElementById('about'),
+  };
+
+  // Fallback content if gifs.json isn't present yet.
+  const FALLBACK = { start: '2025-08-10', secret: '', items: [
+    { url: 'https://static.boredpanda.com/blog/wp-content/uploads/2018/12/hilarious-classical-art-memes-fb30.png', title: '1 jan' },
+    { url: 'https://media.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif', title: '2 jan' },
+    { url: 'https://gifcandy.net/wp-content/uploads/2016/04/gifcandy-funny-26.gif', title: '3 jan' },
+    { url: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGFtajV4YzVvdHc4aGhwMHlmajl3cHF5N2pzM29obzFvbmhrNHBpaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPoUXCurS6C8tBS/giphy.gif', title: '20 Augustus'},
+    { url: 'https://wetgif.com/wp-content/uploads/penis-1.gif', title: '4 jan'},
+    { url: 'https://i.gifer.com/9GcU.gif', title: 'december'},
+    { url: 'https://i.gifer.com/AkgW.gif', title: 'december'},
+    { url: 'https://i.gifer.com/QdSb.gif', title: 'december'},
+
+    
+  ]};
+
+  // Tiny helper: parse query
+  const q = Object.fromEntries(new URL(location).searchParams.entries());
+
+  // Optional very-light access guard (e.g. ?p=yourpass)
+  function guard(pass) {
+    const required = (q.require || '').trim();
+    if (!required) return true; // no guard
+    if (pass === required) { els.guard.classList.add('hidden'); return true; }
+    els.guard.textContent = 'Locked. Add ?p='+required+' to the URL or enter the pass:';
+    els.guard.classList.remove('hidden');
+    const input = document.createElement('input');
+    input.placeholder = 'Enter pass…'; input.style.marginLeft = '6px';
+    const go = document.createElement('button'); go.textContent = 'Unlock'; go.style.marginLeft = '6px';
+    go.onclick = () => { if (guard(input.value)) render(currentIndex); };
+    els.guard.append(input, go);
+    return false;
+  }
+
+  // Days since start (local time). Using midnight local to keep it simple.
+  function dayIndexFrom(dateISO, secret) {
+    const today = new Date();
+    const start = new Date(dateISO + 'T00:00:00');
+    const ms = today.setHours(0,0,0,0) - start.setHours(0,0,0,0);
+    const days = Math.max(0, Math.floor(ms / 86400000));
+    // optional salt so two installs with same list don’t always align
+    let hash = 0; for (let i=0;i<secret.length;i++) hash = ((hash<<5)-hash) + secret.charCodeAt(i) | 0;
+    return Math.abs(days + hash);
+  }
+
+  let data = null; // {start, secret, items}
+  let currentIndex = 0; // index within items
+
+  async function load() {
+    try {
+      const res = await fetch('gifs.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('no gifs.json');
+      data = await res.json();
+    } catch (e) {
+      data = FALLBACK; // fine for local preview
+    }
+
+    if (!Array.isArray(data.items) || !data.items.length) {
+      els.frame.innerHTML = '<div class="muted">No items yet. Add some to <code>gifs.json</code>.</div>';
+      return;
+    }
+
+    const requirePass = q.require; // ?require=passValue to enable
+    if (requirePass && !guard(q.p)) return;
+
+    const base = dayIndexFrom(data.start || new Date().toISOString().slice(0,10), (data.secret||''));
+    currentIndex = base % data.items.length;
+    render(currentIndex);
+  }
+
+  function render(i) {
+    const item = data.items[i];
+    els.frame.innerHTML = '';
+    const img = document.createElement('img');
+    img.loading = 'eager';
+    img.alt = item.title || 'Daily image';
+    img.src = item.url;
+    img.onerror = () => { els.frame.innerHTML = '<div class="muted">Could not load this image.</div>'; };
+    els.frame.appendChild(img);
+
+    els.label.textContent = item.title || '—';
+    els.idx.textContent = (i+1) + ' / ' + data.items.length;
+  }
+
+  function clamp(n, max){ return (n+max)%max }
+
+  els.prev.onclick = () => { currentIndex = clamp(currentIndex-1, data.items.length); render(currentIndex); };
+  els.next.onclick = () => { currentIndex = clamp(currentIndex+1, data.items.length); render(currentIndex); };
+  els.today.onclick = () => { const base = dayIndexFrom(data.start, (data.secret||'')); currentIndex = base % data.items.length; render(currentIndex); };
+  els.random.onclick = () => { currentIndex = Math.floor(Math.random()*data.items.length); render(currentIndex); };
+  els.copy.onclick = async () => {
+    const url = new URL(location.href);
+    url.searchParams.set('i', String(currentIndex));
+    try { await navigator.clipboard.writeText(url.toString()); alert('Link copied!'); } catch(e){ prompt('Copy this link:', url.toString()); }
+  };
+  els.about.onclick = (e) => {
+    e.preventDefault();
+    alert('How it works:\n\n• Static site (just this HTML + gifs.json + your GIF files).\n• Each calendar day maps to one item using the start date.\n• Buttons let you browse or copy a direct link.\n• Optional lightweight lock: add ?require=pass and share with ?p=pass.');
+  };
+
+  // Support direct index via ?i=…
+  window.addEventListener('DOMContentLoaded', async () => {
+    await load();
+    if (q.i && data && data.items) {
+      const idx = Math.min(Math.max(parseInt(q.i, 10)||0, 0), data.items.length-1);
+      currentIndex = idx; render(currentIndex);
+    }
+  });
+  </script>
+  <!-- 
+  ───────────────────────────────────────────────────────────
+  QUICK SETUP PACK (copy/paste)
+  ───────────────────────────────────────────────────────────
+  1) Project structuur (maak dit aan in je repo/map):
+
+     / (root)
+     ├─ index.html               ← dit bestand
+     ├─ gifs.json                ← plak onderstaande template
+     └─ gifs/                    ← zet hier je eigen GIFs in
+        ├─ 001.gif
+        ├─ 002.gif
+        └─ ...
+
+  2) Template voor gifs.json — PLAK in een los bestand `gifs.json` in dezelfde map als index.html:
+
+  {
+    "start": "2025-08-10",
+    "secret": "(optioneel) kleine-salt-of-pass",
+    "items": [
+      { "url": "gifs/001.gif", "title": "Dag 1" },
+      { "url": "gifs/002.gif", "title": "Dag 2" },
+      { "url": "gifs/003.gif", "title": "Dag 3" }
+    ]
+  }
+
+  • Gebruik relatieve paden (zoals hierboven) of volledige URLs.
+  • Voeg gerust meer items toe; de app mapt elke kalenderdag naar het volgende item.
+  • Wil je het tijdelijk vergrendelen? Deel de link als:  https://jouw-site.tld/?require=mijnpass
+    En voeg aan de gedeelde link `?p=mijnpass` toe.
+
+  3) Snel testen
+  • Open `index.html` lokaal in je browser óf deploy naar GitHub Pages / Netlify / Vercel.
+  • Zie je de fallback GIFs? Dan staat `gifs.json` nog niet goed; controleer pad en JSON.
+  -->
+
+</body>
+</html>

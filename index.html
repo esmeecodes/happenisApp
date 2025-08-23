@@ -8,7 +8,7 @@
     :root { --bg:#0b0b10; --card:#141420; --ink:#f5f7ff; --muted:#9aa3b2; --accent:#7c4dff; }
     html,body{height:100%;}
     body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Inter,Segoe UI,Roboto,Helvetica,Arial; background:linear-gradient(120deg,#0b0b10,#121220 60%,#0b0b10); color:var(--ink); display:grid; place-items:center;}
-    .wrap{width:min(960px,96vw);}
+    .wrap{width:min(960px,96vw); }
     .card{background:var(--card); border-radius:20px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.45);}
     header{display:flex; align-items:center; justify-content:space-between; gap:12px;}
     h1{font-size:20px; margin:0; letter-spacing:.2px;}
@@ -18,7 +18,7 @@
     button:hover{border-color:#4a4a6a}
     button.primary{background:var(--accent); border:none}
     .viewer{margin-top:12px; display:grid; gap:12px}
-    .frame{display:grid; place-items:center; background:#0f0f18; border:1px solid #24243a; border-radius:16px; aspect-ratio:3/4; overflow:hidden}
+    .frame{display:grid; place-items:center; background:#0f0f18; border:1px solid #24243a; border-radius:16px; overflow:hidden; max-height: 800px;}
     .frame img{max-width:100%; max-height:100%; display:block}
     .caption{display:flex; justify-content:space-between; align-items:center}
     .index{font-size:12px; color:var(--muted)}
@@ -74,8 +74,7 @@
       </section>
 
       <footer>
-        <div class="muted">Tip: add or edit your list in <code>gifs.json</code>.</div>
-        <a class="link muted" href="#" id="about">How this works</a>
+      <p>Especially made for the happenis of Caro, our birthday lioness ♌︎🫶🏼</p>
       </footer>
     </div>
   </div>
@@ -108,14 +107,14 @@
 
   // Fallback content if gifs.json isn't present yet.
   const FALLBACK = { start: '2025-08-10', secret: '', items: [
-    { url: 'https://static.boredpanda.com/blog/wp-content/uploads/2018/12/hilarious-classical-art-memes-fb30.png', title: '1 jan' },
-    { url: 'https://media.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif', title: '2 jan' },
-    { url: 'https://gifcandy.net/wp-content/uploads/2016/04/gifcandy-funny-26.gif', title: '3 jan' },
+    { url: 'https://static.boredpanda.com/blog/wp-content/uploads/2018/12/hilarious-classical-art-memes-fb30.png', title: '' },
+    { url: 'https://media.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif', title: '' },
+    { url: 'https://gifcandy.net/wp-content/uploads/2016/04/gifcandy-funny-26.gif', title: '' },
     { url: 'https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGFtajV4YzVvdHc4aGhwMHlmajl3cHF5N2pzM29obzFvbmhrNHBpaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPoUXCurS6C8tBS/giphy.gif', title: '20 Augustus'},
-    { url: 'https://wetgif.com/wp-content/uploads/penis-1.gif', title: '4 jan'},
-    { url: 'https://i.gifer.com/9GcU.gif', title: 'december'},
-    { url: 'https://i.gifer.com/AkgW.gif', title: 'december'},
-    { url: 'https://i.gifer.com/QdSb.gif', title: 'december'},
+    { url: 'https://wetgif.com/wp-content/uploads/penis-1.gif', title: ''},
+    { url: 'https://i.gifer.com/9GcU.gif', title: ''},
+    { url: 'https://i.gifer.com/AkgW.gif', title: ''},
+    { url: 'https://i.gifer.com/QdSb.gif', title: ''},
 
     
   ]};

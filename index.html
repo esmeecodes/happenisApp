@@ -207,7 +207,7 @@
 
   els.prev.onclick = () => { currentIndex = clamp(currentIndex-1, data.items.length); render(currentIndex); };
   els.next.onclick = () => { currentIndex = clamp(currentIndex+1, data.items.length); render(currentIndex); };
-  els.today.onclick = () => { const base = dayIndexFrom(data.start, (data.secret||'')); currentIndex = base % data.items.length; render(currentIndex); };
+  // els.today.onclick = () => { const base = dayIndexFrom(data.start, (data.secret||'')); currentIndex = base % data.items.length; render(currentIndex); };
   els.random.onclick = () => { currentIndex = Math.floor(Math.random()*data.items.length); render(currentIndex); };
   els.copy.onclick = async () => {
     const url = new URL(location.href);

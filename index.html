@@ -209,15 +209,15 @@
   els.next.onclick = () => { currentIndex = clamp(currentIndex+1, data.items.length); render(currentIndex); };
   // els.today.onclick = () => { const base = dayIndexFrom(data.start, (data.secret||'')); currentIndex = base % data.items.length; render(currentIndex); };
   els.random.onclick = () => { currentIndex = Math.floor(Math.random()*data.items.length); render(currentIndex); };
-  els.copy.onclick = async () => {
-    const url = new URL(location.href);
-    url.searchParams.set('i', String(currentIndex));
-    try { await navigator.clipboard.writeText(url.toString()); alert('Link copied!'); } catch(e){ prompt('Copy this link:', url.toString()); }
-  };
-  els.about.onclick = (e) => {
-    e.preventDefault();
-    alert('How it works:\n\n• Static site (just this HTML + gifs.json + your GIF files).\n• Each calendar day maps to one item using the start date.\n• Buttons let you browse or copy a direct link.\n• Optional lightweight lock: add ?require=pass and share with ?p=pass.');
-  };
+  // els.copy.onclick = async () => {
+  //   const url = new URL(location.href);
+  //   url.searchParams.set('i', String(currentIndex));
+  //   try { await navigator.clipboard.writeText(url.toString()); alert('Link copied!'); } catch(e){ prompt('Copy this link:', url.toString()); }
+  // };
+  // els.about.onclick = (e) => {
+  //   e.preventDefault();
+  //   alert('How it works:\n\n• Static site (just this HTML + gifs.json + your GIF files).\n• Each calendar day maps to one item using the start date.\n• Buttons let you browse or copy a direct link.\n• Optional lightweight lock: add ?require=pass and share with ?p=pass.');
+  // };
 
   // Support direct index via ?i=…
   window.addEventListener('DOMContentLoaded', async () => {
